@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HumanizaIA - Convierte textos de IA en texto humano</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0f0f1a;color:#eee;min-height:100vh;}
+nav{background:#16213e;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #0f3460;position:sticky;top:0;z-index:100;}
+.logo{font-size:1.4em;font-weight:bold;color:#e94560;}.logo span{color:#eee;}
+.nav-links{display:flex;gap:20px;align-items:center;}
+.nav-links a{color:#aaa;text-decoration:none;font-size:0.9em;}
+.btn-nav{background:#e94560;color:#fff;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:0.9em;font-weight:bold;}
+.hero{text-align:center;padding:50px 20px 30px;}
+.hero h1{font-size:2.6em;font-weight:800;margin-bottom:14px;line-height:1.2;}
+.hero h1 span{color:#e94560;}
+.hero p{font-size:1.05em;color:#aaa;max-width:580px;margin:0 auto 24px;}
+.badge-free{display:inline-block;background:#1a3a2a;color:#4caf50;border:1px solid #4caf50;padding:6px 16px;border-radius:20px;font-size:0.85em;margin-bottom:16px;}
+.tool{max-width:1100px;margin:0 auto;padding:0 20px 50px;}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+@media(max-width:768px){.tool-grid{grid-template-columns:1fr;}}
+.panel{background:#16213e;border-radius:12px;padding:18px;border:1px solid #0f3460;}
+.panel-label{font-size:0.85em;color:#aaa;margin-bottom:8px;display:flex;justify-content:space-between;}
+.word-count{font-size:0.8em;color:#666;}.word-count.warn{color:#f0a500;}.word-count.over{color:#e94560;}
+textarea{width:100%;min-height:280px;background:#0f0f1a;border:1px solid #0f3460;color:#eee;padding:14px;border-radius:8px;font-size:0.95em;font-family:inherit;resize:vertical;line-height:1.65;}
+textarea:focus{outline:none;border-color:#e94560;}textarea[readonly]{background:#0a0a14;color:#ccc;}
+.controls{max-width:1100px;margin:0 auto;padding:0 20px 16px;}
+.ctrl-row{background:#16213e;border-radius:12px;padding:14px 18px;border:1px solid #0f3460;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;}
+.nivel-group{display:flex;gap:10px;flex-wrap:wrap;}
+.nivel-btn{background:#0f0f1a;border:1px solid #0f3460;color:#aaa;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:0.85em;transition:all 0.2s;}
+.nivel-btn.active{background:#e94560;border-color:#e94560;color:#fff;}
+.btn-humanizar{background:#e94560;color:#fff;border:none;padding:12px 30px;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;}
+.btn-humanizar:disabled{background:#555;cursor:not-allowed;}
+.btn-copy{background:#0f3460;color:#eee;border:1px solid #e94560;padding:10px 18px;border-radius:8px;font-size:0.9em;cursor:pointer;}
+.btn-clear{background:transparent;color:#666;border:1px solid #333;padding:10px 14px;border-radius:8px;font-size:0.9em;cursor:pointer;}
+.limit-bar{max-width:1100px;margin:0 auto;padding:0 20px 14px;}
+.limit-inner{background:#16213e;border-radius:8px;padding:10px 18px;display:flex;align-items:center;gap:14px;border:1px solid #0f3460;}
+.limit-track{flex:1;height:6px;background:#0f0f1a;border-radius:3px;overflow:hidden;}
+.limit-fill{height:100%;background:#4caf50;border-radius:3px;transition:width 0.3s;}
+.limit-fill.warn{background:#f0a500;}.limit-fill.over{background:#e94560;}
+.limit-txt{font-size:0.82em;color:#aaa;white-space:nowrap;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:200;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{background:#16213e;border-radius:16px;padding:38px;max-width:500px;width:90%;border:1px solid #0f3460;text-align:center;}
+.modal h2{font-size:1.5em;color:#e94560;margin-bottom:10px;}
+.modal p{color:#aaa;font-size:0.93em;margin-bottom:26px;line-height:1.6;}
+.planes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;}
+.plan{background:#0f0f1a;border:2px solid #0f3460;border-radius:10px;padding:18px;cursor:pointer;transition:border-color 0.2s;position:relative;}
+.plan:hover,.plan.popular{border-color:#e94560;}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#e94560;color:#fff;font-size:0.7em;padding:3px 10px;border-radius:10px;white-space:nowrap;}
+.plan-nombre{font-weight:bold;font-size:1em;margin-bottom:4px;}
+.plan-precio{font-size:1.5em;font-weight:800;color:#e94560;}
+.plan-precio span{font-size:0.5em;color:#aaa;}
+.plan-desc{font-size:0.75em;color:#aaa;margin-top:5px;}
+.btn-suscribir{background:#e94560;color:#fff;border:none;padding:13px 36px;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;width:100%;margin-bottom:10px;}
+.btn-cerrar{background:transparent;color:#666;border:none;font-size:0.85em;cursor:pointer;text-decoration:underline;}
+.features{max-width:1100px;margin:0 auto;padding:30px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;}
+.feat{background:#16213e;border-radius:10px;padding:18px;border:1px solid #0f3460;}
+.feat-ico{font-size:1.8em;margin-bottom:8px;}
+.feat h3{font-size:0.93em;margin-bottom:5px;}
+.feat p{font-size:0.8em;color:#aaa;line-height:1.5;}
+footer{text-align:center;padding:26px;color:#444;font-size:0.82em;border-top:1px solid #16213e;}
+.status-bar{font-size:0.82em;padding:6px 0;color:#aaa;min-height:22px;}
+.status-bar.ok{color:#4caf50;}.status-bar.err{color:#e94560;}
+/* Gemini key box — eliminado, key va en servidor */
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Humaniza<span>IA</span></div>
+  <div class="nav-links">
+    <a href="#">Inicio</a><a href="#">Precios</a><a href="#">FAQ</a>
+    <button class="btn-nav" onclick="mostrarPaywall()">Suscribirse</button>
+  </div>
+</nav>
+<div class="hero">
+  <div class="badge-free">✓ Gratis hasta 100 palabras por uso</div>
+  <h1>Convierte texto de <span>IA</span><br>en texto humano</h1>
+  <p>Pega tu texto generado por ChatGPT, Gemini o cualquier IA y lo transformamos para que suene natural y pase los detectores.</p>
+</div>
+
+<!-- Barra de límite de palabras -->
+<div class="limit-bar">
+  <div class="limit-inner">
+    <div class="limit-track"><div class="limit-fill" id="limitFill" style="width:0%"></div></div>
+    <div class="limit-txt">Palabras: <b id="wCount">0</b>/<span id="limiteLabel">100</span> &nbsp;|&nbsp; Usos gratis: <b id="usosLbl">3</b>/3 &nbsp;|&nbsp; <a href="#" onclick="mostrarPaywall();return false;" style="color:#e94560;text-decoration:none;">1.000 palabras ilimitado con Pro ↗</a></div>
+  </div>
+</div>
+
+<!-- Controles -->
+<div class="controls">
+  <div class="ctrl-row">
+    <div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <div class="status-bar" id="statusBar"></div>
+      <button class="btn-clear" onclick="limpiar()">Limpiar</button>
+      <button class="btn-copy" onclick="copiar()">Copiar resultado</button>
+      <button class="btn-humanizar" id="btnH" onclick="humanizar()">✨ Humanizar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Área de texto -->
+<div class="tool">
+  <div class="tool-grid">
+    <div class="panel">
+      <div class="panel-label"><span>📝 Texto original (IA)</span><span class="word-count" id="wcLbl">0 palabras</span></div>
+      <textarea id="entrada" placeholder="Pega aquí tu texto generado por IA..." oninput="actualizarContador()"></textarea>
+    </div>
+    <div class="panel">
+      <div class="panel-label"><span>✅ Texto humanizado</span></div>
+      <textarea id="salida" readonly placeholder="El resultado aparecerá aquí..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- Features -->
+<div class="features">
+  <div class="feat"><div class="feat-ico">⚡</div><h3>Instantáneo</h3><p>Sin esperas ni servidores. Todo ocurre en tu navegador.</p></div>
+  <div class="feat"><div class="feat-ico">🔒</div><h3>Privado</h3><p>Tu texto va directo a OpenAI desde tu navegador. Nosotros no vemos nada.</p></div>
+  <div class="feat"><div class="feat-ico">🌐</div><h3>Español nativo</h3><p>Optimizado para español latinoamericano y peninsular.</p></div>
+</div>
+
+<!-- Paywall modal -->
+<div class="overlay" id="overlay" onclick="cerrarPaywall(event)">
+  <div class="modal">
+    <h2>🚀 Desbloquea el poder completo</h2>
+    <div id="modalLimiteMsg" style="display:none;background:#1a0a0a;border:1px solid #e94560;border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+      <div style="color:#e94560;font-weight:bold;font-size:1em;margin-bottom:4px;">⏱ Has usado tus 3 humanizaciones gratuitas</div>
+      <div style="color:#aaa;font-size:0.88em;">Próxima disponibilidad gratuita en: <b id="modalTiempo" style="color:#f0a500;">24h 0m</b></div>
+    </div>
+    <p>Con <b>Pro</b> humanizas textos de hasta <b>1.000 palabras</b>, intentos <b>ilimitados</b>, sin esperas.</p>
+    <div style="background:#0f2a1a;border:1px solid #4caf50;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.83em;color:#4caf50;">
+      ✓ Versión gratuita: 100 palabras · 3 intentos cada 24h<br>
+      ✓ Versión Pro: 1.000 palabras · Intentos ilimitados · IA Gemini
+    </div>
+    <div class="planes">
+      <div class="plan" onclick="seleccionarPlan(this,'mensual')">
+        <div class="plan-nombre">Mensual</div>
+        <div class="plan-precio">$20.000<span>/mes</span></div>
+        <div class="plan-desc">Ilimitado · 1.000 palabras · Soporte</div>
+      </div>
+      <div class="plan popular" onclick="seleccionarPlan(this,'anual')">
+        <div class="plan-badge">⭐ Más popular</div>
+        <div class="plan-nombre">Anual</div>
+        <div class="plan-precio">$145.000<span>/año</span></div>
+        <div class="plan-desc">Ahorra 39% · Ilimitado · Acceso anticipado</div>
+      </div>
+    </div>
+    <button class="btn-suscribir" onclick="irAPago()">
+      <img src="https://www.mercadopago.com/favicon.ico" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">
+      Suscribirse con Mercado Pago
+    </button>
+    <button class="btn-cerrar" onclick="cerrarPaywall()">Continuar gratis</button>
+  </div>
+</div>
+
+<footer>© 2025 HumanizaIA · <a href="#" style="color:#e94560;text-decoration:none;">Privacidad</a></footer>
+<script>
+var nivel = 3;
+var LIMITE = 100;
+var LIMITE_PRO = 1000;
+var ES_PRO = false; // se activa tras verificar pago
+var planSeleccionado = 'anual';
+var MAX_USOS = 3;
+var MODO_DEV = false; // producción — límite de 3 usos cada 24h activo
+var API = ''; // vacío = mismo origen (servidor Node)
+
+// ── Estado desde servidor ─────────────────────────────────────────────────────
+async function fetchEstado() {
+  try {
+    var r = await fetch(API + '/api/estado');
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function fetchUsar() {
+  var r = await fetch(API + '/api/usar', { method: 'POST' });
+  if (r.status === 429) {
+    var d = await r.json();
+    return { bloqueado: true, segundosRestantes: d.segundosRestantes };
+  }
+  return await r.json();
+}
+
+
+
+function r(a){return a[Math.floor(Math.random()*a.length)];}
+function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function p(n){return Math.random()<n;}
+function uc(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function lc(s){return s.charAt(0).toLowerCase()+s.slice(1);}
+
+function contarPalabras(t){return t.trim()===''?0:t.trim().split(/\s+/).length;}
+
+function actualizarContador(){
+  var t=document.getElementById('entrada').value;
+  var n=contarPalabras(t);
+  var lbl=document.getElementById('wcLbl');
+  var fill=document.getElementById('limitFill');
+  var limiteActual = ES_PRO ? LIMITE_PRO : LIMITE;
+  document.getElementById('wCount').textContent=n;
+  document.getElementById('limiteLabel').textContent=limiteActual;
+  lbl.textContent=n+' palabras';
+  var pct=Math.min(100,Math.round(n/limiteActual*100));
+  fill.style.width=pct+'%';
+  if(n>limiteActual){lbl.className='word-count over';fill.className='limit-fill over';}
+  else if(n>limiteActual*0.8){lbl.className='word-count warn';fill.className='limit-fill warn';}
+  else{lbl.className='word-count';fill.className='limit-fill';}
+}
+
+function setNivel(n,btn){
+  nivel=n;
+  document.querySelectorAll('.nivel-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+}
+
+window.addEventListener('load', async function(){
+  if (MODO_DEV) { actualizarUsosLbl(0, false, 0); return; }
+  var estado = null;
+  try { estado = await fetchEstado(); } catch(e) { estado = null; }
+
+  if (estado) {
+    MAX_USOS = estado.max;
+    actualizarUsosLbl(estado.usos, estado.bloqueado, estado.segundosRestantes);
+    if (estado.bloqueado) {
+      document.getElementById('btnH').disabled = true;
+      iniciarCuentaRegresiva(estado.segundosRestantes);
+    }
+  } else {
+    // Fallback localStorage
+    var usos = parseInt(localStorage.getItem('hia_usos')||'0');
+    var desde = parseInt(localStorage.getItem('hia_desde')||'0');
+    if (desde && Date.now() - desde >= 24*60*60*1000) { usos=0; localStorage.setItem('hia_usos',0); }
+    var bloqueado = usos >= MAX_USOS;
+    var seg = bloqueado ? Math.ceil((24*60*60*1000-(Date.now()-desde))/1000) : 0;
+    actualizarUsosLbl(usos, bloqueado, seg);
+    if (bloqueado) { document.getElementById('btnH').disabled=true; iniciarCuentaRegresiva(seg); }
+  }
+});
+
+function guardarGeminiKey(){}
+
+// ═══════════════════════════════════════════════════════════════
+// MOTOR GEMINI — llamada al servidor (key oculta en backend)
+// ═══════════════════════════════════════════════════════════════
+async function humanizarConServidor(txt){
+  var resp=await fetch('/api/humanizar',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({texto:txt})
+  });
+  if(resp.status===429){
+    var d=await resp.json();
+    throw {tipo:'limite',segundosRestantes:d.segundosRestantes};
+  }
+  if(!resp.ok){
+    var d=await resp.json().catch(function(){return {};});
+    throw {tipo:'error',mensaje:d.error||'Error del servidor'};
+  }
+  return await resp.json(); // {resultado, usos, max, bloqueado}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MOTOR LOCAL — motor completo (fallback sin API key)
+// ═══════════════════════════════════════════════════════════════
+
+var frasesIA = {
+  "es importante destacar que":["vale mencionar","hay que ver","fíjate que","mira","ojo con esto","date cuenta"],
+  "es fundamental":["es clave","es básico","hace falta","es vital","no puede faltar"],
+  "en conclusión":["al final","resumiendo","total","en fin","bueno","pa terminar","cerrando"],
+  "por otro lado":["por otra parte","además","también","aparte","encima","igualmente"],
+  "sin embargo":["pero","aunque","eso sí","ahora bien","igual","de todas formas"],
+  "de esta manera":["así","de este modo","entonces","de esta forma","con esto"],
+  "es necesario":["hay que","toca","se necesita","hace falta","es preciso","conviene"],
+  "a continuación":["luego","después","ahora","seguidamente","acto seguido"],
+  "en primer lugar":["primero","para empezar","lo primero","inicialmente","de entrada"],
+  "en segundo lugar":["segundo","luego","después","a continuación","seguidamente"],
+  "por lo tanto":["entonces","así que","por eso","total","de ahí que"],
+  "cabe destacar":["vale la pena ver","hay que notar","fíjate","destaca","resalta"],
+  "es evidente que":["está claro","se ve","obviamente","claramente","es obvio"],
+  "en el contexto de":["en","dentro de","hablando de","respecto a"],
+  "con el fin de":["para","buscando","queriendo","con la idea de"],
+  "en relación con":["sobre","de","respecto a","en cuanto a","acerca de"],
+  "de acuerdo con":["según","como dice","para","conforme a"],
+  "es importante señalar":["vale decir","hay que ver","conviene notar"],
+  "resulta relevante":["es importante","vale la pena","interesa"],
+  "se puede observar":["se ve","vemos","notamos","se aprecia","se nota"],
+  "permite identificar":["deja ver","muestra","enseña","revela"],
+  "en este sentido":["así","en esto","aquí","en esta línea"],
+  "de manera significativa":["mucho","bastante","considerablemente","notablemente"],
+  "en la actualidad":["hoy","ahora","actualmente","hoy en día"],
+  "a través de":["mediante","con","por medio de","usando","por"],
+  "llevar a cabo":["hacer","realizar","ejecutar","efectuar"],
+  "poner de manifiesto":["mostrar","demostrar","evidenciar","dejar claro"],
+  "tener en cuenta":["considerar","recordar","pensar en","no olvidar"],
+  "de igual manera":["igualmente","también","del mismo modo"],
+  "en virtud de":["por","debido a","gracias a"],
+  "con respecto a":["sobre","acerca de","en cuanto a"],
+  "en base a":["basándose en","según","a partir de"],
+  "es preciso":["hay que","es necesario","hace falta"],
+  "cabe mencionar":["vale decir","hay que mencionar","conviene señalar"],
+  "resulta fundamental":["es fundamental","es clave","es básico"],
+  "se encuentra":["está","se halla","se ubica"],
+  "en función de":["según","dependiendo de"],
+  "con la finalidad de":["para","con el fin de","buscando"],
+  "no obstante":["pero","aunque","eso sí","con todo"],
+  "por consiguiente":["así que","entonces","por eso"],
+  "en consecuencia":["por eso","entonces","así que"],
+  "adicionalmente":["además","también","encima"],
+  "asimismo":["también","igualmente"],
+  "finalmente":["al final","para terminar","por último"],
+  "inicialmente":["al principio","al inicio","de entrada"]
+};
+
+var conectoresFormales = {
+  "asimismo":"también","no obstante":"pero","por consiguiente":"así que",
+  "en consecuencia":"por eso","adicionalmente":"además","posteriormente":"después",
+  "previamente":"antes","consecuentemente":"entonces","paralelamente":"al mismo tiempo",
+  "igualmente":"también","contrariamente":"al contrario","finalmente":"al final",
+  "inicialmente":"al principio","primeramente":"primero","seguidamente":"luego",
+  "simultáneamente":"a la vez"
+};
+
+var palabrasFormales = {
+  "utilizar":"usar","realizar":"hacer","efectuar":"hacer","implementar":"aplicar",
+  "optimizar":"mejorar","facilitar":"ayudar","posibilitar":"permitir","incrementar":"aumentar",
+  "disminuir":"reducir","adquirir":"conseguir","proporcionar":"dar","denominar":"llamar",
+  "constituir":"formar","manifestar":"mostrar","evidenciar":"mostrar","examinar":"revisar",
+  "analizar":"revisar","determinar":"decidir","establecer":"fijar","identificar":"encontrar",
+  "seleccionar":"elegir","evaluar":"valorar","desarrollar":"crear","elaborar":"hacer",
+  "ejecutar":"hacer","obtener":"conseguir","alcanzar":"lograr","generar":"crear",
+  "producir":"hacer","emplear":"usar","demostrar":"mostrar","indicar":"señalar",
+  "mencionar":"decir","expresar":"decir","comunicar":"decir","presentar":"mostrar",
+  "revelar":"mostrar","descubrir":"encontrar","localizar":"encontrar","detectar":"encontrar",
+  "percibir":"notar","observar":"ver","comprender":"entender","interpretar":"entender",
+  "concebir":"imaginar","formular":"crear","diseñar":"crear","planificar":"planear",
+  "organizar":"ordenar","estructurar":"ordenar","clasificar":"ordenar","agrupar":"juntar",
+  "fragmentar":"dividir","unificar":"unir","integrar":"juntar","combinar":"mezclar",
+  "fusionar":"unir","vincular":"conectar","relacionar":"conectar","asociar":"relacionar"
+};
+
+function reemplazarFrases(texto){
+  var resultado=texto;
+  for(var frase in frasesIA){
+    var alts=frasesIA[frase];
+    var regex=new RegExp(frase,'gi');
+    resultado=resultado.replace(regex,function(){return alts[Math.floor(Math.random()*alts.length)];});
+  }
+  return resultado;
+}
+
+function simplificarLenguaje(texto){
+  var resultado=texto;
+  for(var f in conectoresFormales){
+    resultado=resultado.replace(new RegExp('\\b'+f+'\\b','gi'),conectoresFormales[f]);
+  }
+  for(var f in palabrasFormales){
+    resultado=resultado.replace(new RegExp('\\b'+f+'\\b','gi'),palabrasFormales[f]);
+  }
+  return resultado;
+}
+
+function variarEstructura(texto){
+  var oraciones=texto.split(/([.!?]+)/);
+  var resultado=[];
+  for(var i=0;i<oraciones.length-1;i+=2){
+    var oracion=oraciones[i].trim();
+    var puntuacion=oraciones[i+1]||'.';
+    if(oracion){
+      if(oracion.length>150&&Math.random()<0.3){
+        var comas=[];
+        for(var j=0;j<oracion.length;j++) if(oracion[j]===',') comas.push(j);
+        if(comas.length>0){
+          var pd=comas[Math.floor(comas.length/2)];
+          var p1=oracion.substring(0,pd).trim();
+          var p2=oracion.substring(pd+1).trim();
+          resultado.push(p1+'. ');
+          resultado.push(p2.charAt(0).toUpperCase()+p2.slice(1));
+          resultado.push(puntuacion+' ');
+          continue;
+        }
+      }
+      resultado.push(oracion);
+      resultado.push(puntuacion+' ');
+    }
+  }
+  return resultado.join('');
+}
+
+function añadirVariacion(texto){
+  var resultado=texto;
+  var expresiones=[
+    ["muy importante","bastante importante"],["muy bueno","bastante bueno"],
+    ["es decir","o sea"],["de hecho","la verdad"],["en realidad","realmente"],
+    ["básicamente","en el fondo"],["específicamente","en concreto"],
+    ["generalmente","por lo general"],["frecuentemente","a menudo"],
+    ["adecuadamente","bien"],["correctamente","bien"],["rápidamente","rápido"],
+    ["claramente","claro"],["obviamente","obvio"],["definitivamente","sin duda"],
+    ["completamente","del todo"],["totalmente","todo"]
+  ];
+  for(var i=0;i<expresiones.length;i++){
+    if(Math.random()<0.4){
+      resultado=resultado.replace(new RegExp('\\b'+expresiones[i][0]+'\\b','gi'),expresiones[i][1]);
+    }
+  }
+  var muletillas=["Bueno, ","Mira, ","Pues ","Entonces ","Así que ","Fíjate que ","La cosa es que "];
+  var ors=resultado.split('. ');
+  for(var i=1;i<ors.length;i++){
+    if(Math.random()<0.2&&ors[i].length>20){
+      var m=muletillas[Math.floor(Math.random()*muletillas.length)];
+      ors[i]=m+ors[i].toLowerCase();
+    }
+  }
+  resultado=ors.join('. ');
+  resultado=romperUniformidad(resultado);
+  resultado=añadirContracciones(resultado);
+  resultado=variarPuntuacion(resultado);
+  return resultado;
+}
+
+function variarPuntuacion(texto){
+  var resultado=texto;
+  var ors=resultado.split(/\.\s+/);
+  var nuevas=[];
+  for(var i=0;i<ors.length;i++){
+    var oracion=ors[i];
+    if(oracion.length>120&&Math.random()<0.3){
+      var mitad=Math.floor(oracion.length/2);
+      var desde=Math.max(0,mitad-30),hasta=Math.min(oracion.length,mitad+30);
+      var mejorComa=-1;
+      for(var j=desde;j<hasta;j++) if(oracion[j]===','){mejorComa=j;break;}
+      if(mejorComa>0){
+        var p1=oracion.substring(0,mejorComa).trim();
+        var p2=oracion.substring(mejorComa+1).trim();
+        if(p2.length>0){nuevas.push(p1);nuevas.push(p2.charAt(0).toUpperCase()+p2.slice(1));continue;}
+      }
+    }
+    nuevas.push(oracion);
+  }
+  resultado=nuevas.join('. ');
+  resultado=resultado.replace(/\.\s+/g,function(m){return Math.random()<0.05?'... ':m;});
+  return resultado;
+}
+
+function romperUniformidad(texto){
+  var resultado=texto;
+  var ors=resultado.split(/\.\s+/);
+  var nuevas=[];
+  var i=0;
+  while(i<ors.length){
+    if(i<ors.length-1&&ors[i].length<80&&ors[i+1].length<80&&Math.random()<0.25){
+      var cons=[' y ',', y ',', además ',', también ',' pero ',', aunque '];
+      var con=cons[Math.floor(Math.random()*cons.length)];
+      nuevas.push(ors[i]+con+ors[i+1].toLowerCase());
+      i+=2;
+    } else {
+      nuevas.push(ors[i]);i++;
+    }
+  }
+  return nuevas.join('. ');
+}
+
+function añadirContracciones(texto){
+  var resultado=texto;
+  if(Math.random()<0.8) resultado=resultado.replace(/\bde el\b/gi,'del');
+  if(Math.random()<0.8) resultado=resultado.replace(/\ba el\b/gi,'al');
+  if(Math.random()<0.4) resultado=resultado.replace(/\bpara el\b/gi,'pal');
+  resultado=resultado.replace(/\bno es\b/gi,function(m){return Math.random()<0.15?'no es que':m;});
+  resultado=resultado.replace(/\bdebemos\b/gi,function(m){return Math.random()<0.15?'tenemos que':m;});
+  return resultado;
+}
+
+function añadirImperfecciones(texto){
+  var resultado=texto;
+  resultado=resultado.replace(/\bpero\b/gi,function(m){return Math.random()<0.15?'pero bueno':m;});
+  resultado=resultado.replace(/\bentonces\b/gi,function(m){return Math.random()<0.15?'entonces pues':m;});
+  resultado=resultado.replace(/\bahora\b/gi,function(m){return Math.random()<0.12?'ahora mismo':m;});
+  var expresionesDuda=["digamos","por así decirlo","en cierto modo","de alguna manera","podríamos decir","más o menos","algo así"];
+  var ors=resultado.split('. ');
+  for(var i=0;i<ors.length;i++){
+    if(Math.random()<0.1&&ors[i].length>40){
+      var exp=expresionesDuda[Math.floor(Math.random()*expresionesDuda.length)];
+      var palabras=ors[i].split(' ');
+      if(palabras.length>5){
+        var pos=Math.floor(palabras.length/2);
+        palabras.splice(pos,0,exp+',');
+        ors[i]=palabras.join(' ');
+      }
+    }
+  }
+  resultado=ors.join('. ');
+  return resultado;
+}
+
+function eliminarPatronesIA(texto){
+  var resultado=texto;
+  resultado=resultado.replace(/En primer lugar,?\s*/gi,function(){
+    return r(["Primero, ","Para empezar, ","Lo primero es que ","Inicialmente "]);
+  });
+  resultado=resultado.replace(/En segundo lugar,?\s*/gi,function(){
+    return r(["Segundo, ","Luego, ","Después, ","También "]);
+  });
+  resultado=resultado.replace(/En tercer lugar,?\s*/gi,function(){
+    return r(["Tercero, ","Además, ","Por último, ","Y finalmente "]);
+  });
+  return resultado;
+}
+
+function humanizarLocal(txt, niv){
+  var resultado=txt;
+  resultado=eliminarPatronesIA(resultado);
+  if(niv>=1){
+    resultado=reemplazarFrases(resultado);
+    resultado=simplificarLenguaje(resultado);
+  }
+  if(niv>=2){
+    resultado=variarEstructura(resultado);
+    resultado=añadirVariacion(resultado);
+  }
+  if(niv>=3){
+    resultado=añadirImperfecciones(resultado);
+    resultado=reemplazarFrases(resultado); // segunda pasada
+  }
+  resultado=resultado.replace(/\s+/g,' ');
+  resultado=resultado.replace(/\s+([.,;:!?])/g,'$1');
+  resultado=resultado.replace(/([.,;:!?])([A-Za-zÁÉÍÓÚáéíóúÑñ])/g,'$1 $2');
+  resultado=resultado.replace(/\.\s+([a-záéíóúñ])/g,function(m,l){return '. '+l.toUpperCase();});
+  return (resultado.charAt(0).toUpperCase()+resultado.slice(1)).trim();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════════════════════════
+function setStatus(msg,tipo){
+  var s=document.getElementById('statusBar');
+  s.textContent=msg;s.className='status-bar'+(tipo?' '+tipo:'');
+}
+
+function actualizarUsosLbl(usos, bloqueado, segundosRestantes){
+  var restantes = Math.max(0, MAX_USOS - (usos || 0));
+  document.getElementById('usosLbl').textContent = restantes;
+  if (bloqueado && segundosRestantes > 0) {
+    var h = Math.floor(segundosRestantes / 3600);
+    var m = Math.floor((segundosRestantes % 3600) / 60);
+    var s = segundosRestantes % 60;
+    var txt = h > 0 ? h+'h '+m+'m' : m > 0 ? m+'m '+s+'s' : s+'s';
+    setStatus('Límite alcanzado. Disponible en: ' + txt, 'err');
+  }
+}
+
+var _cuentaTimer = null;
+var _cuentaModalTimer = null;
+function iniciarCuentaRegresiva(seg) {
+  if (_cuentaTimer) clearInterval(_cuentaTimer);
+  var restantes = seg;
+  _cuentaTimer = setInterval(function(){
+    restantes--;
+    if (restantes <= 0) {
+      clearInterval(_cuentaTimer);
+      setStatus('', '');
+      document.getElementById('btnH').disabled = false;
+      actualizarUsosLbl(0, false, 0);
+      return;
+    }
+    var h = Math.floor(restantes / 3600);
+    var m = Math.floor((restantes % 3600) / 60);
+    var s = restantes % 60;
+    var txt = h > 0 ? h+'h '+m+'m' : m > 0 ? m+'m '+s+'s' : s+'s';
+    setStatus('Límite alcanzado. Disponible en: ' + txt, 'err');
+  }, 1000);
+}
+
+function iniciarCuentaRegresivaModal(seg){
+  if(_cuentaModalTimer) clearInterval(_cuentaModalTimer);
+  var restantes=seg;
+  _cuentaModalTimer=setInterval(function(){
+    restantes--;
+    if(restantes<=0){
+      clearInterval(_cuentaModalTimer);
+      document.getElementById('modalLimiteMsg').style.display='none';
+      return;
+    }
+    var h=Math.floor(restantes/3600),m=Math.floor((restantes%3600)/60),s=restantes%60;
+    var txt=h>0?h+'h '+m+'m':m>0?m+'m '+s+'s':s+'s';
+    document.getElementById('modalTiempo').textContent=txt;
+  },1000);
+}
+
+async function humanizar(){
+  var txt=document.getElementById('entrada').value.trim();
+  if(!txt)return;
+  var limiteActual = ES_PRO ? LIMITE_PRO : LIMITE;
+  if(contarPalabras(txt)>limiteActual){mostrarPaywall();return;}
+
+  var btn=document.getElementById('btnH');
+  btn.disabled=true; btn.textContent='Procesando...';
+  document.getElementById('salida').value='';
+  setStatus('Procesando...','');
+
+  // Intentar registrar uso en servidor; si falla, usar localStorage
+  var resp = null;
+  if (!MODO_DEV) {
+    try { resp = await fetchUsar(); } catch(e) { resp = null; }
+  }
+
+  if (!MODO_DEV && resp && resp.bloqueado) {
+    mostrarPaywall();
+    iniciarCuentaRegresiva(resp.segundosRestantes);
+    actualizarUsosLbl(MAX_USOS, true, resp.segundosRestantes);
+    btn.disabled=true; btn.textContent='✨ Humanizar';
+    return;
+  }
+
+  // Fallback sin servidor: localStorage
+  if (!MODO_DEV && !resp) {
+    var usos = parseInt(localStorage.getItem('hia_usos')||'0');
+    var desde = parseInt(localStorage.getItem('hia_desde')||'0');
+    var ahora = Date.now();
+    if (ahora - desde >= 24*60*60*1000) { usos=0; desde=ahora; localStorage.setItem('hia_desde',ahora); }
+    if (usos >= MAX_USOS) {
+      var seg = Math.ceil((24*60*60*1000 - (ahora-desde)) / 1000);
+      mostrarPaywall();
+      iniciarCuentaRegresiva(seg);
+      actualizarUsosLbl(MAX_USOS, true, seg);
+      btn.disabled=true; btn.textContent='✨ Humanizar';
+      return;
+    }
+    usos++;
+    localStorage.setItem('hia_usos', usos);
+    if (!desde) localStorage.setItem('hia_desde', ahora);
+    actualizarUsosLbl(usos, false, 0);
+  } else if (!MODO_DEV && resp) {
+    actualizarUsosLbl(resp.usos, resp.bloqueado, 0);
+  }
+
+  // Llamar al servidor (Gemini oculto); fallback a motor local si no hay servidor
+  humanizarConServidor(txt).then(function(data){
+    document.getElementById('salida').value=data.resultado;
+    setStatus('✓ Humanizado con IA','ok');
+    btn.disabled=false; btn.textContent='✨ Humanizar';
+    if(!MODO_DEV) actualizarUsosLbl(data.usos,data.bloqueado,0);
+    verificarUltimoUso(data.usos);
+  }).catch(function(e){
+    if(e.tipo==='limite'){
+      mostrarPaywall();
+      iniciarCuentaRegresiva(e.segundosRestantes);
+      actualizarUsosLbl(MAX_USOS,true,e.segundosRestantes);
+      btn.disabled=true; btn.textContent='✨ Humanizar';
+      return;
+    }
+    // Sin servidor o error: usar motor local
+    setStatus('Servidor no disponible — usando motor local','err');
+    document.getElementById('salida').value=humanizarLocal(txt,nivel);
+    setStatus('✓ Listo (motor local)','ok');
+    btn.disabled=false; btn.textContent='✨ Humanizar';
+    // Contar uso en localStorage
+    if(!MODO_DEV){
+      var usos=parseInt(localStorage.getItem('hia_usos')||'0')+1;
+      localStorage.setItem('hia_usos',usos);
+      if(!localStorage.getItem('hia_desde')) localStorage.setItem('hia_desde',Date.now());
+      actualizarUsosLbl(usos,false,0);
+      verificarUltimoUso(usos);
+    }
+  });
+}
+
+function verificarUltimoUso(usos){
+  if(!MODO_DEV && usos>=MAX_USOS){
+    setTimeout(function(){mostrarPaywallConContador();},800);
+  }
+}
+
+function limpiar(){
+  document.getElementById('entrada').value='';
+  document.getElementById('salida').value='';
+  setStatus('');actualizarContador();
+}
+function copiar(){
+  var txt=document.getElementById('salida').value;
+  if(!txt)return;
+  if(navigator.clipboard)navigator.clipboard.writeText(txt);
+  else{document.getElementById('salida').select();document.execCommand('copy');}
+  var btn=document.querySelector('.btn-copy');
+  btn.textContent='✓ Copiado';
+  setTimeout(function(){btn.textContent='Copiar resultado';},2000);
+}
+function mostrarPaywall(){document.getElementById('overlay').classList.add('show');}
+function mostrarPaywallConContador(){
+  // Calcular tiempo restante
+  var desde = parseInt(localStorage.getItem('hia_desde')||'0');
+  var ahora = Date.now();
+  var seg = desde ? Math.max(0, Math.ceil((24*60*60*1000-(ahora-desde))/1000)) : 24*60*60;
+  // Mostrar mensaje de límite en el modal
+  var h=Math.floor(seg/3600), m=Math.floor((seg%3600)/60);
+  var txtTiempo = h+'h '+m+'m';
+  document.getElementById('modalLimiteMsg').style.display='block';
+  document.getElementById('modalTiempo').textContent=txtTiempo;
+  iniciarCuentaRegresivaModal(seg);
+  mostrarPaywall();
+}
+function cerrarPaywall(e){
+  if(!e||e.target===document.getElementById('overlay'))
+    document.getElementById('overlay').classList.remove('show');
+}
+function seleccionarPlan(el,plan){
+  planSeleccionado=plan;
+  document.querySelectorAll('.plan').forEach(function(p){p.classList.remove('popular');});
+  el.classList.add('popular');
+}
+// ── MERCADO PAGO ──────────────────────────────────────────────────────────────
+// Reemplaza estas URLs con tus links de pago reales de Mercado Pago
+// Créalos en: https://www.mercadopago.com.co/subscription-plans
+var MP_LINKS = {
+  mensual: 'https://mpago.li/1yd3xNx',
+  anual:   'https://mpago.li/2vuknQv'
+};
+
+function irAPago(){
+  var url = MP_LINKS[planSeleccionado];
+  if(url.indexOf('REEMPLAZA') > -1){
+    alert('Para activar pagos:\n1. Ve a mercadopago.com.co\n2. Crea un link de pago para cada plan\n3. Reemplaza las URLs en MP_LINKS en el script');
+    return;
+  }
+  window.open(url, '_blank');
+}
+</script>
+</body>
+</html>

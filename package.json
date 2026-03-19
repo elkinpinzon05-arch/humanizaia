@@ -1,0 +1,9 @@
+{
+  "name": "humanizaia",
+  "version": "1.0.0",
+  "description": "Humanizador de textos IA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
