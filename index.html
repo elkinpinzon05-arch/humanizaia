@@ -156,7 +156,19 @@ footer{text-align:center;padding:26px;color:#444;font-size:0.82em;border-top:1px
   </div>
 </div>
 
-<footer>© 2025 HumanizaIA · <a href="#" style="color:#e94560;text-decoration:none;">Privacidad</a></footer>
+<!-- Modal activar Pro -->
+<div class="overlay" id="overlayPro" onclick="cerrarActivarPro(event)">
+  <div class="modal">
+    <h2>✅ Activar cuenta Pro</h2>
+    <p style="color:#aaa;font-size:0.93em;margin-bottom:20px;">Ingresa el email con el que pagaste en Mercado Pago para activar tu acceso Pro en este dispositivo.</p>
+    <input type="email" id="emailPro" placeholder="tu@email.com" style="width:100%;padding:12px;border-radius:8px;border:1px solid #0f3460;background:#0f0f1a;color:#eee;font-size:1em;margin-bottom:14px;">
+    <div id="proMsg" style="font-size:0.85em;min-height:20px;margin-bottom:12px;"></div>
+    <button class="btn-suscribir" onclick="activarPro()">Activar Pro</button>
+    <button class="btn-cerrar" onclick="cerrarActivarPro()">Cancelar</button>
+  </div>
+</div>
+
+<footer>© 2025 HumanizaIA · <a href="#" style="color:#e94560;text-decoration:none;">Privacidad</a> · <a href="#" onclick="mostrarActivarPro();return false;" style="color:#4caf50;text-decoration:none;">Ya pagué — Activar Pro</a></footer>
 <script>
 var nivel = 3;
 var LIMITE = 100;
@@ -724,6 +736,54 @@ function irAPago(){
     return;
   }
   window.open(url, '_blank');
+  // Mostrar opción de activar Pro después de pagar
+  setTimeout(function(){
+    cerrarPaywall();
+    setTimeout(mostrarActivarPro, 500);
+  }, 2000);
+}
+
+function mostrarActivarPro(){
+  document.getElementById('overlayPro').classList.add('show');
+  document.getElementById('emailPro').focus();
+}
+function cerrarActivarPro(e){
+  if(!e||e.target===document.getElementById('overlayPro'))
+    document.getElementById('overlayPro').classList.remove('show');
+}
+
+async function activarPro(){
+  var email = document.getElementById('emailPro').value.trim();
+  var msg = document.getElementById('proMsg');
+  if(!email || !email.includes('@')){ msg.style.color='#e94560'; msg.textContent='Ingresa un email válido.'; return; }
+  msg.style.color='#aaa'; msg.textContent='Verificando...';
+  try{
+    var r = await fetch('/api/activar-pro',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email: email})
+    });
+    var d = await r.json();
+    if(r.ok && d.ok){
+      ES_PRO = true;
+      LIMITE = LIMITE_PRO;
+      msg.style.color='#4caf50';
+      msg.textContent='✓ Pro activado. Plan: '+d.plan;
+      document.getElementById('usosLbl').textContent='∞';
+      document.getElementById('limiteLabel').textContent='1.000';
+      document.getElementById('btnH').disabled=false;
+      setStatus('✓ Cuenta Pro activa — 1.000 palabras ilimitado','ok');
+      actualizarContador();
+      setTimeout(cerrarActivarPro, 2000);
+    } else {
+      msg.style.color='#e94560';
+      msg.textContent = d.error==='No se encontró pago para ese email'
+        ? 'No encontramos pago con ese email. Verifica que sea el mismo con el que pagaste.'
+        : d.error || 'Error al verificar';
+    }
+  }catch(e){
+    msg.style.color='#e94560'; msg.textContent='Error de conexión.';
+  }
 }
 </script>
 </body>
